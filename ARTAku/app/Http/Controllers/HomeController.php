@@ -14,12 +14,22 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function calculateTotalexpense()
+    {
+        return expense::latest()->where('User_id', auth()->user()->id)
+        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');;
+    }
+
+    public function calculateTotalincome()
+    {
+        return income::latest()->where('User_id', auth()->user()->id)
+        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
+    }
     public function index()
     {
-        $expenseTotal = expense::latest()->where('User_id', auth()->user()->id)
-        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
-        $incomeTotal = income::latest()->where('User_id', auth()->user()->id)
-        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
+        $expenseTotal = self::calculateTotalexpense();
+        $incomeTotal = self::calculateTotalincome();
         $savedPercentage = auth()->user()->budgeting_plan->saved_percentage;
 
         if ($incomeTotal == 0) {
@@ -34,8 +44,6 @@ class HomeController extends Controller
             'expenseTotal' => $expenseTotal,
             'incomeTotal' => $incomeTotal,
             'User' => auth()->user(),
-
-
             'usedPercentage' => $usedPercentage,
         ]);
     }

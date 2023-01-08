@@ -14,13 +14,22 @@ class IncomeListController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function calculateTotalexpense() {
+        return expense::latest()->where('User_id', auth()->user()->id)
+        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
+    }
+    
+    public function calculateTotalincome() {
+        return income::latest()->where('User_id', auth()->user()->id)
+        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
+    }
+
     public function index()
     {
         $income = income::latest()->where('User_id', auth()->user()->id)->get();
-        $incomeTotal = income::latest()->where('User_id', auth()->user()->id)
-        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
-        $expenseTotal = expense::latest()->where('User_id', auth()->user()->id)
-        ->where('date', '>=', Carbon::now()->subDays(Carbon::now()->day))->sum('amount');
+        $incomeTotal = self::calculateTotalincome();
+        $expenseTotal = self::calculateTotalexpense();
         $User =  auth()->user();
 
         $remaining = $incomeTotal*(100 - $User->budgeting_plan->saved_percentage)/100 - $expenseTotal;
